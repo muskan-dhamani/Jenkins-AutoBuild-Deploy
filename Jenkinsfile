@@ -1,19 +1,22 @@
 pipeline {
     agent any
 
+    triggers {
+        githubPush()
+    }
+
     stages {
 
-        stage('Checkout') {
+        stage('Info') {
             steps {
-                echo 'Code checked out from GitHub'
+                echo "Branch: ${env.BRANCH_NAME}"
+                echo "Commit: ${env.GIT_COMMIT}"
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh '''
-                docker build -t jenkins-app:latest .
-                '''
+                sh 'docker build -t jenkins-app:latest .'
             }
         }
 
@@ -21,6 +24,15 @@ pipeline {
             steps {
                 sh './deploy.sh'
             }
+        }
+    }
+
+    post {
+        success {
+            echo 'Deployment successful :)'
+        }
+        failure {
+            echo 'Deployment failed :('
         }
     }
 }
